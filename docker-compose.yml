@@ -29,3 +29,15 @@ services:
         condition: service_healthy
     links:
       - users-db
+
+  nginx:
+    container_name: nginx
+    build: ./nginx/
+    restart: always
+    ports:
+      - 80:80
+    depends_on:
+      users-service:
+        condition: service_started
+    links:
+      - users-service
