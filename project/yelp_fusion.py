@@ -54,6 +54,7 @@ GRANT_TYPE = 'client_credentials'
 # Defaults for our simple example.
 DEFAULT_PRICE = '2'
 DEFAULT_LOCATION = 'San Francisco, CA'
+DEFAULT_CATEGORIES = ''
 
 def request(host, path, bearer_token, url_params=None):
     """Given a bearer token, send a GET request to the API.
@@ -83,7 +84,7 @@ def request(host, path, bearer_token, url_params=None):
     return response.json()
 
 
-def search(bearer_token, price, location):
+def search(bearer_token, price, location, categories):
     """Query the Search API by a search price and location.
 
     Args:
@@ -101,7 +102,8 @@ def search(bearer_token, price, location):
         'location': location.replace(' ', '+'),
         'limit': RESTAURANT_LIMIT,
         'open_now': 'true',
-        'price': price
+        'price': price,
+        'categories': categories
     }
     return request(API_HOST, SEARCH_PATH, bearer_token, url_params=url_params)
 
@@ -120,7 +122,7 @@ def get_business(bearer_token, business_id):
     return request(API_HOST, business_path, bearer_token)
 
 
-def query_api(price , location):
+def query_api(price , location, categories):
     """Queries the API by the input values from the user.
 
     Args:
@@ -129,7 +131,7 @@ def query_api(price , location):
     """
     bearer_token = 'B5XYOw2fqoxnXH5dUEaf3Mp57gTsUkGHQBiDa8viH1uYQDlCxox7p9G0b45QVr2BiJkziIGWaPhjdQhd-xtfhf1AUZ9yx2Xejn3GTNPEojfgCAVOn7stSbYvKDJ6WXYx'
 
-    response = search(bearer_token, price, location)
+    response = search(bearer_token, price, location, categories)
 
     businesses = response.get('businesses')
 
@@ -143,28 +145,20 @@ def query_api(price , location):
         response = get_business(bearer_token, biz_id)
         pprint.pprint(response, indent=2)
 
-'''
-    print(u'{0} businesses found, querying business info ' \
-        'for the top result "{1}" ...'.format(
-            len(businesses), business_id))
-    print(u'Result for business "{0}" found:'.format(business_id))
- '''
-
-
+    if len(businesses) == 0:
+        print('No businesses found')
 
 def main():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-q', '--price', dest='price', default=DEFAULT_PRICE,
-                        type=str, help='Search price (default: %(default)s)')
-    parser.add_argument('-l', '--location', dest='location',
-                        default=DEFAULT_LOCATION, type=str,
-                        help='Search location (default: %(default)s)')
+    parser.add_argument('--price', dest='price', default=DEFAULT_PRICE, type=str, help='Search price (default: %(default)s)')
+    parser.add_argument('--location', dest='location', default=DEFAULT_LOCATION, type=str, help='Search location (default: %(default)s)')
+    parser.add_argument('--categories', dest='categories', default=DEFAULT_CATEGORIES, type=str, help='Search location (default: %(default)s)')
 
     input_values = parser.parse_args()
 
     try:
-        query_api(input_values.price, input_values.location)
+        query_api(input_values.price, input_values.location, input_values.categories)
     except HTTPError as error:
         sys.exit(
             'Encountered HTTP error {0} on {1}:\n {2}\nAbort program.'.format(
