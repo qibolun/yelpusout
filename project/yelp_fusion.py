@@ -55,6 +55,7 @@ GRANT_TYPE = 'client_credentials'
 DEFAULT_PRICE = '2'
 DEFAULT_LOCATION = 'San Francisco, CA'
 DEFAULT_CATEGORIES = ''
+DEFAULT_INCLUDE_REVIEWS = 'true'
 
 def request(host, path, bearer_token, url_params=None):
     """Given a bearer token, send a GET request to the API.
@@ -121,8 +122,20 @@ def get_business(bearer_token, business_id):
 
     return request(API_HOST, business_path, bearer_token)
 
+def get_reviews(bearer_token, business_id):
+    """Query the Reviews API by a business ID.
+    Args:
+        business_id (str): The ID of the business to query.
 
-def query_api(price , location, categories):
+    Returns:
+        dict: The JSON response from the request.
+    """
+    reviews_path = BUSINESS_PATH + business_id + '/reviews'
+
+    return request(API_HOST, reviews_path, bearer_token)
+
+
+def query_api(price, location, categories):
     """Queries the API by the input values from the user.
 
     Args:
@@ -145,6 +158,10 @@ def query_api(price , location, categories):
         response = get_business(bearer_token, biz_id)
         pprint.pprint(response, indent=2)
 
+        # Get reviews for business
+        reviews = get_reviews(bearer_token, biz_id)
+        pprint.pprint(reviews, indent=2)
+
     if len(businesses) == 0:
         print('No businesses found')
 
@@ -154,6 +171,7 @@ def main():
     parser.add_argument('--price', dest='price', default=DEFAULT_PRICE, type=str, help='Search price (default: %(default)s)')
     parser.add_argument('--location', dest='location', default=DEFAULT_LOCATION, type=str, help='Search location (default: %(default)s)')
     parser.add_argument('--categories', dest='categories', default=DEFAULT_CATEGORIES, type=str, help='Search location (default: %(default)s)')
+    parser.add_argument('--include_reviews', dest='include_reviews', default=DEFAULT_INCLUDE_REVIEWS, type=str, help='Search location (default: %(default)s)')
 
     input_values = parser.parse_args()
 
