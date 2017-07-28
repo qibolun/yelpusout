@@ -161,7 +161,7 @@ def start_voting(group_id):
 
         response_object = {
             'status': 'success',
-            'message': '{group_name}'s voting session' was created!'.format(group_name=group_name),
+            'message': "{group_name}'s voting session' was created!".format(group_name=group_name),
             'voting_session_id': voting_session.voting_session_id,
         }
         return jsonify(response_object), 201
