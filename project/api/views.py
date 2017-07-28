@@ -160,3 +160,36 @@ def start_vote(group_id):
             'message': 'Invalid payload.',
         }
         return jsonify(response_object), 400
+
+@votingsession_blueprint.route('/group/<group_id>/votingsession/<voting_session_id>', methods=['PUT'])
+def end_voting(group_id, voting_session_id):
+    post_data = request.get_json()
+    if not post_data:
+        response_object = {
+            'status': 'fail',
+            'message': 'Invalid payload.',
+        }
+        return jsonify(response_object), 400
+    try:
+        votingsession = VotingSession.query.filter_by(voting_session_id=voting_session_id).first()
+        if votingsession:
+            votingsession.voting_status = "Done"
+            db.session.commit()
+            response_object = {
+                'status': 'success',
+                'message': '{voting_session_id} marked as Done!'.format(voting_session_id=voting_session_id),
+            }
+            return jsonify(response_object), 200
+        else:
+            response_object = {
+                'status': 'fail',
+                'message': 'Sorry. The votingsession doesn\'t exist.'
+            }
+            return jsonify(response_object), 400
+    except exc.IntegrityError as e:
+        db.session.rollback()
+        response_object = {
+            'status': 'fail',
+            'message': 'Invalid payload.',
+        }
+        return jsonify(response_object), 400
