@@ -5,7 +5,11 @@ from project.api.models import User
 from project.api.models import Group
 from project.api.models import GroupDetails
 from project import db
+import operator
+import json
 
+from werkzeug.contrib.cache import MemcachedCache
+cache = MemcachedCache(['127.0.0.1:11211'])
 
 users_blueprint = Blueprint('users', __name__, template_folder='./templates')
 group_blueprint = Blueprint('group', __name__, template_folder='./templates')
@@ -76,7 +80,15 @@ def create_group():
         db.session.add(newgroup)
         db.session.flush()
 
-        groupinfo = GroupDetails(group_id=newgroup.group_id, latitude=location.get('latitude'), longitude=location.get('longitude'), radius=radius, price=price, open_at=openat, categories=categories)
+        groupinfo = GroupDetails(
+            group_id=newgroup.group_id, 
+            latitude=location.get('latitude'), 
+            longitude=location.get('longitude'), 
+            radius=radius, 
+            price=price, 
+            open_at=openat, 
+            categories=categories
+        )
         db.session.add(groupinfo)
         db.session.commit()
 
@@ -127,3 +139,78 @@ def join_group(group_id):
             'message': 'Invalid payload.',
         }
         return jsonify(response_object), 400
+
+@group_blueprint.route('/group/<groupid>/user/<userid>/vote', methods=['POST'])
+def add_vote(groupid, userid):
+    biz_id = request.args.get('biz_id')     # we need to add biz_id on the request
+
+    # Create a dictionary of dictionary
+    # for all group votes
+    # in the following style
+    # { '123': 
+    #   { 'blue-bottle-coffee': 1 }
+    #   { 'japa-curry': 1 }
+    #   { 'mcdonalnds': 5 }
+    # }
+    # where, key = group id, value = dict of biz id and # votes
+
+    # NOTE: Ideally we want to store businesses in the cache too 
+    # by the business id and flush the cache after the vote is over.
+
+    try:
+        group_votes = cache.get(groupid) # outer dict
+        if group_votes is None:
+            group_votes = {}
+            group_votes[groupid] = {} # inner dict
+            group_votes[groupid][biz_id] = 1    # add biz to dict with vote count 1
+        else:
+            biz_votes = group_votes.get(groupid)
+            biz_vote_cnt = biz_votes.get(biz_id)   # get total # of votes for a particular biz
+            if biz_vote_cnt is None:
+                group_votes[groupid][biz_id] = 1
+            else:
+                group_votes[groupid][biz_id] = biz_vote_cnt + 1
+
+        # update cache
+        cache.set(groupid, group_votes, timeout=5 * 60)
+        
+        response_object = {
+            'status': 'success'
+        }
+        return jsonify(response_object), 200
+    except exc.IntegrityError as e:
+        response_object = {
+            'status': 'fail',
+            'message': 'There was an error registering vote.',
+        }
+        return jsonify(response_object), 500
+
+@group_blueprint.route('/group/<groupid>/vote', methods=['GET'])
+def get_votes(groupid):
+    # Retrieve all votes from cache and return
+    # sorted by value
+
+    try:
+        group_votes = cache.get(groupid)
+        if group_votes is None:
+            response_object = {
+                    'status': 'fail',
+                    'message': 'Sorry. The group doesn\'t exist.'
+                }
+                return jsonify(response_object), 404
+
+        # this gives a sorted tuple
+        sorted_group_votes = sorted(group_votes.items(), key=operator.itemgetter(1), reverse=True)
+
+        response_object = {
+            'status': 'success'
+            'votes': json.dumps(sorted_group_votes) # hopefully parsing this wont be too bad
+        }
+        return jsonify(response_object), 200
+    except exc.IntegrityError as e:
+        db.session.rollback()
+        response_object = {
+            'status': 'fail',
+            'message': 'There was an error getting votes for group ' + groupid,
+        }
+        return jsonify(response_object), 500
