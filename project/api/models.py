@@ -36,8 +36,27 @@ class GroupDetails(db.Model):
     price = db.Column(db.String(20), nullable=False)
     open_at = db.Column(db.Integer)
     categories = db.Column(db.String(20))
+    isVegan = db.Column(db.Boolean, default=0)
+    isVegetarian = db.Column(db.Boolean, default=0)
+    isHalal = db.Column(db.Boolean, default=0)
+    isKosher = db.Column(db.Boolean, default=0)
+    needsWheelchairAccess = db.Column(db.Boolean, default=0)
 
-    def __init__(self, group_id, latitude, longitude, radius, price, open_at, categories):
+    def __init__(
+        self, 
+        group_id, 
+        latitude, 
+        longitude, 
+        radius, 
+        price, 
+        open_at, 
+        categories, 
+        isVegan, 
+        isVegetarian, 
+        isHalal, 
+        isKosher, 
+        needsWheelchairAccess
+    ):
         self.group_id = group_id
         self.latitude = latitude
         self.longitude = longitude
@@ -45,6 +64,11 @@ class GroupDetails(db.Model):
         self.price = price
         self.open_at = open_at
         self.categories = categories
+        self.isVegan = isVegan
+        self.isVegetarian = isVegetarian
+        self.isHalal = isHalal
+        self.isKosher = isKosher
+        self.needsWheelchairAccess = needsWheelchairAccess
 
 class VotingSession(db.Model):
     __tablename__ = "votingsession"

@@ -77,6 +77,12 @@ def create_group():
     price = post_data.get('price')
     openat = post_data.get('openat')
     categories = post_data.get('categories')
+    isVegan = post_data.get('isVegan')
+    isVegetarian = post_data.get('isVegetarian')
+    isHalal = post_data.get('isHalal')
+    isKosher = post_data.get('isKosher')
+    needsWheelchairAccess = post_data.get('needsWheelchairAccess')
+
     try:
         newgroup = Group(group_name=group_name)
         db.session.add(newgroup)
@@ -89,7 +95,12 @@ def create_group():
             radius=radius,
             price=price,
             open_at=openat,
-            categories=categories
+            categories=categories,
+            isVegan = isVegan,
+            isVegetarian = isVegetarian,
+            isHalal = isHalal,
+            isKosher = isKosher,
+            needsWheelchairAccess = needsWheelchairAccess
         )
         db.session.add(groupinfo)
         db.session.commit()
