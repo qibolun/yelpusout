@@ -51,7 +51,7 @@ class VotingSession(db.Model):
     voting_session_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     group_id = db.Column(db.Integer)
     voting_status = db.Column(db.String)
-    consensus_reached = db.Column(db.Boolean, default=0)
+    vote_count = db.Column(db.Integer, default=0)
     create_date = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=False)
     update_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
