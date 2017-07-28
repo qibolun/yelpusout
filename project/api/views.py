@@ -217,7 +217,13 @@ def end_voting(group_id, voting_session_id):
     try:
         votingsession = VotingSession.query.filter_by(voting_session_id=voting_session_id).first()
         if votingsession:
-            votingsession.voting_status = "Done"
+            voting_session.vote_count += 1
+            # Get Member count
+            member_count = Group.query.filter_by(group_id=group_id).first().member_count
+            # Check if Member count == Vote count
+            if voting_session.vote_count == member_count:
+                # Set Done if true
+                votingsession.voting_status = "Done"
             db.session.commit()
             response_object = {
                 'status': 'success',
