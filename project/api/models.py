@@ -48,7 +48,8 @@ class GroupDetails(db.Model):
 
 class VotingSession(db.Model):
     __tablename__ = "votingsession"
-    group_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    voting_session_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    group_id = db.Column(db.Integer)
     voting_status = db.Column(db.String)
     consensus_reached = db.Column(db.Boolean, default=0)
     create_date = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=False)
