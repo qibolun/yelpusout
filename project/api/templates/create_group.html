@@ -12,12 +12,29 @@
     {% block css %}{% endblock %}
   </head>
   <body>
+
     <div class="container">
-      <h1> Welcome to Yelp Us Out </h1>
+      <h1> Create a Group</h1>
+
     <form action="" method="post">
-      <input type="submit" name="create" value="Create"> 
+      <input type="text" name="group_name" placeholder="Group Name" required> 
+      <br>
+
+      <input type="text" name="location" placeholder="Location" required> 
+      <br>
+
+      <input type="text" name="radius" placeholder="Radius" required> 
+      <p> miles </p>
+
+      <br>
+      <input type="number" name="money" placeholder="How many $?" required> 
+
+      <br>
+      <input type="submit" name="create"> 
+
     </form>
     </div>
+
     <!-- scripts -->
     <script src="https://code.jquery.com/jquery-2.2.4.min.js"
             integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="

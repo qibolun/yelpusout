@@ -85,7 +85,7 @@ def request(host, path, bearer_token, url_params=None):
     return response.json()
 
 
-def search(bearer_token, price, location, categories):
+def search(bearer_token, price, location, categories, radius):
     """Query the Search API by a search price and location.
 
     Args:
@@ -104,7 +104,8 @@ def search(bearer_token, price, location, categories):
         'limit': RESTAURANT_LIMIT,
         'open_now': 'true',
         'price': price,
-        'categories': categories
+        'categories': categories,
+        'radius': radius
     }
     return request(API_HOST, SEARCH_PATH, bearer_token, url_params=url_params)
 
@@ -135,7 +136,7 @@ def get_reviews(bearer_token, business_id):
     return request(API_HOST, reviews_path, bearer_token)
 
 
-def query_api(price, location, categories):
+def query_api(price, location, categories, radius):
     """Queries the API by the input values from the user.
 
     Args:
@@ -144,7 +145,7 @@ def query_api(price, location, categories):
     """
     bearer_token = 'B5XYOw2fqoxnXH5dUEaf3Mp57gTsUkGHQBiDa8viH1uYQDlCxox7p9G0b45QVr2BiJkziIGWaPhjdQhd-xtfhf1AUZ9yx2Xejn3GTNPEojfgCAVOn7stSbYvKDJ6WXYx'
 
-    response = search(bearer_token, price, location, categories)
+    response = search(bearer_token, price, location, categories, radius)
 
     businesses = response.get('businesses')
 
@@ -152,40 +153,27 @@ def query_api(price, location, categories):
         print(u'No businesses for {0} in {1} found.'.format(price, location))
         return
 
-    #business_id = businesses[0]['id']
+    business_data = []
+
     for index, biz in enumerate(businesses):
         biz_id = businesses[index]['id']
         response = get_business(bearer_token, biz_id)
-        pprint.pprint(response, indent=2)
+
+        business_data.append(response)
+        # pprint.pprint(response, indent=2)
 
         # Get reviews for business
         reviews = get_reviews(bearer_token, biz_id)
-        pprint.pprint(reviews, indent=2)
 
-    if len(businesses) == 0:
-        print('No businesses found')
+        business_data[index]['reviews'] = reviews
 
-def main():
-    parser = argparse.ArgumentParser()
+    return business_data
 
-    parser.add_argument('--price', dest='price', default=DEFAULT_PRICE, type=str, help='Search price (default: %(default)s)')
-    parser.add_argument('--location', dest='location', default=DEFAULT_LOCATION, type=str, help='Search location (default: %(default)s)')
-    parser.add_argument('--categories', dest='categories', default=DEFAULT_CATEGORIES, type=str, help='Search location (default: %(default)s)')
-    parser.add_argument('--include_reviews', dest='include_reviews', default=DEFAULT_INCLUDE_REVIEWS, type=str, help='Search location (default: %(default)s)')
-
-    input_values = parser.parse_args()
-
-    try:
-        query_api(input_values.price, input_values.location, input_values.categories)
-    except HTTPError as error:
-        sys.exit(
-            'Encountered HTTP error {0} on {1}:\n {2}\nAbort program.'.format(
-                error.code,
-                error.url,
-                error.read(),
-            )
-        )
-
-
-if __name__ == '__main__':
-    main()
+'''
+Price is either  1 OR 2 OR 3 OR 4 or include multiple values, [1,2], [1,2,3], etc.
+Location is an address, city, state
+Categories are listed at https://www.yelp.com/developers/documentation/v2/all_category_list , we support 'kosher' 'halal' 'vegan' 'vegetarian'
+Search radius is in meters
+'''
+def get_business_data(price, location, categories, radius):
+    return query_api(price, location, categories, radius)
