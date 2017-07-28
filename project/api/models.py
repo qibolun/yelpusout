@@ -30,6 +30,7 @@ class Group(db.Model):
 class GroupDetails(db.Model):
     __tablename__ = "groupdetails"
     group_id = db.Column(db.Integer, primary_key=True)
+    location = db.Column(db.String)
     latitude = db.Column(db.Integer, nullable=False)
     longitude = db.Column(db.Integer, nullable=False)
     radius = db.Column(db.Integer, nullable=False)
@@ -44,7 +45,8 @@ class GroupDetails(db.Model):
 
     def __init__(
         self, 
-        group_id, 
+        group_id,
+        location,
         latitude, 
         longitude, 
         radius, 
@@ -58,6 +60,7 @@ class GroupDetails(db.Model):
         needsWheelchairAccess
     ):
         self.group_id = group_id
+        self.location = location
         self.latitude = latitude
         self.longitude = longitude
         self.radius = radius

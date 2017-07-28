@@ -9,6 +9,8 @@ from project import db
 import operator
 import json
 
+import project.yelp_fusion as YelpFusion
+
 from werkzeug.contrib.cache import SimpleCache
 cache = SimpleCache()
 
@@ -73,6 +75,8 @@ def create_group():
         return jsonify(response_object), 400
     group_name = post_data.get('groupname')
     location = post_data.get('location')
+    latitude = post_data.get('latitude')
+    longitude = post_data.get('longitude')
     radius = post_data.get('radius')
     price = post_data.get('price')
     openat = post_data.get('openat')
@@ -90,8 +94,9 @@ def create_group():
 
         groupinfo = GroupDetails(
             group_id=newgroup.group_id,
-            latitude=location.get('latitude'),
-            longitude=location.get('longitude'),
+            location=location,
+            latitude=latitude,
+            longitude=longitude,
             radius=radius,
             price=price,
             open_at=openat,
@@ -330,3 +335,30 @@ def get_votes(groupid):
         }
         return jsonify(response_object), 400
 
+@group_blueprint.route('/group/<groupid>/restaurants', method=['GET'])
+def get_restaurants(groupid):
+    try:
+        if not group_id:
+        response_object = {
+            'status': 'fail',
+            'message': 'Invalid payload.',
+        }
+        return jsonify(response_object), 400
+    try:
+        group = Group.query.filter_by(group_id=group_id).first()
+        if not group:
+            response_object = {
+                'status': 'fail',
+                'message': 'Sorry. The group doesn\'t exist.'
+            }
+            return jsonify(response_object), 404
+        else:
+            location = group.
+
+            
+    except exc.IntegrityError as e:
+        response_object = {
+            'status': 'fail',
+            'message': 'There was an error retrieving restaurants for group.',
+        }
+        return jsonify(response_object), 500
