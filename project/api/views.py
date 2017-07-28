@@ -127,3 +127,34 @@ def join_group(group_id):
             'message': 'Invalid payload.',
         }
         return jsonify(response_object), 400
+
+@group_blueprint.route('/group/<group_id>/membercount', methods=['GET'])
+def get_group_memebers(group_id):
+    if not group_id:
+        response_object = {
+            'status': 'fail',
+            'message': 'Invalid payload.',
+        }
+        return jsonify(response_object), 400
+    try:
+        group = Group.query.filter_by(group_id=group_id).first()
+        if group:
+            response_object = {
+                'status': 'success',
+                'message': '{group_id} was found!'.format(group_id=group_id),
+                'membercount': group.member_count,
+            }
+            return jsonify(response_object), 200
+        else:
+            response_object = {
+                'status': 'fail',
+                'message': 'Sorry. The group doesn\'t exist.'
+            }
+            return jsonify(response_object), 400
+    except exc.IntegrityError as e:
+        db.session.rollback()
+        response_object = {
+            'status': 'fail',
+            'message': 'Invalid payload.',
+        }
+        return jsonify(response_object), 400
