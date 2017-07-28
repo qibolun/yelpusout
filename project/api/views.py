@@ -4,11 +4,13 @@ from sqlalchemy import exc
 from project.api.models import User
 from project.api.models import Group
 from project.api.models import GroupDetails
+from project.api.models import VotingSession
 from project import db
 
 
 users_blueprint = Blueprint('users', __name__, template_folder='./templates')
 group_blueprint = Blueprint('group', __name__, template_folder='./templates')
+votingsession_blueprint = Blueprint('votingsession', __name__, template_folder='./templates')
 
 @users_blueprint.route('/', methods=['GET'])
 def index():
@@ -120,6 +122,37 @@ def join_group(group_id):
                 'message': 'Sorry. The group doesn\'t exist.'
             }
             return jsonify(response_object), 400
+    except exc.IntegrityError as e:
+        db.session.rollback()
+        response_object = {
+            'status': 'fail',
+            'message': 'Invalid payload.',
+        }
+        return jsonify(response_object), 400
+
+@votingsession_blueprint.route('/group/<group_id>/votingsession', methods=['POST'])
+def start_vote(group_id):
+    post_data = request.get_json()
+    if not post_data:
+        response_object = {
+            'status': 'fail',
+            'message': 'Invalid payload.',
+        }
+        return jsonify(response_object), 400
+    try:
+        voting_session = VotingSession(
+                group_id=group_id,
+                voting_status="InProgress",
+            )
+        db.session.add(voting_session)
+        db.session.commit()
+
+        response_object = {
+            'status': 'success',
+            'message': '{group_name}'s voting session' was created!'.format(group_name=group_name),
+            'voting_session_id': voting_session.voting_session_id,
+        }
+        return jsonify(response_object), 201
     except exc.IntegrityError as e:
         db.session.rollback()
         response_object = {
