@@ -2,11 +2,12 @@ from flask import Blueprint, jsonify, request,render_template
 from sqlalchemy import exc
 
 from project.api.models import User
+from project.api.models import Group
 from project import db
 
 
 users_blueprint = Blueprint('users', __name__, template_folder='./templates')
-group_blueprint = Blueprint('group')
+group_blueprint = Blueprint('group', __name__)
 
 @users_blueprint.route('/', methods=['GET'])
 def index():
