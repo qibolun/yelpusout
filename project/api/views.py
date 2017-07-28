@@ -131,7 +131,7 @@ def join_group(group_id):
         return jsonify(response_object), 400
 
 @votingsession_blueprint.route('/group/<group_id>/votingsession', methods=['POST'])
-def start_vote(group_id):
+def start_voting(group_id):
     post_data = request.get_json()
     if not post_data:
         response_object = {
