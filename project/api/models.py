@@ -46,7 +46,7 @@ class GroupDetails(db.Model):
         self.open_at = open_at
         self.categories = categories
 
-def VotingSession(db.Model):
+class VotingSession(db.Model):
     __tablename__ = "votingsession"
     group_id = db.Column(db.Integer)
     voting_status = db.Column(db.String)
