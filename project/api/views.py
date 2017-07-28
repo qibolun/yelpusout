@@ -1,13 +1,14 @@
-from flask import Blueprint, jsonify, request,render_template
+from flask import Blueprint, jsonify, request, render_template
 from sqlalchemy import exc
 
 from project.api.models import User
 from project.api.models import Group
+from project.api.models import GroupDetails
 from project import db
 
 
 users_blueprint = Blueprint('users', __name__, template_folder='./templates')
-group_blueprint = Blueprint('group', __name__)
+group_blueprint = Blueprint('group', __name__, template_folder='./templates')
 
 @users_blueprint.route('/', methods=['GET'])
 def index():
@@ -17,7 +18,7 @@ def index():
 def ping_pong():
     return jsonify({
         'status': 'success',
-        'message': 'pong!'
+        'message': 'pong!',
     })
 
 @users_blueprint.route('/users', methods=['POST'])
@@ -26,7 +27,7 @@ def add_user():
     if not post_data:
         response_object = {
             'status': 'fail',
-            'message': 'Invalid payload.'
+            'message': 'Invalid payload.',
         }
         return jsonify(response_object), 400
     username = post_data.get('username')
@@ -38,20 +39,20 @@ def add_user():
             db.session.commit()
             response_object = {
                 'status': 'success',
-                'message': f'{email} was added!'
+                'message': '{email} was added!',
             }
             return jsonify(response_object), 201
         else:
             response_object = {
                 'status': 'fail',
-                'message': 'Sorry. That email already exists.'
+                'message': 'Sorry. That email already exists.',
             }
             return jsonify(response_object), 400
     except exc.IntegrityError as e:
         db.session.rollback()
         response_object = {
             'status': 'fail',
-            'message': 'Invalid payload.'
+            'message': 'Invalid payload.',
         }
         return jsonify(response_object), 400
 
@@ -61,7 +62,7 @@ def create_group():
     if not post_data:
         response_object = {
             'status': 'fail',
-            'message': 'Invalid payload.'
+            'message': 'Invalid payload.',
         }
         return jsonify(response_object), 400
     group_name = post_data.get('groupname')
@@ -71,41 +72,46 @@ def create_group():
     openat = post_data.get('openat')
     categories = post_data.get('categories')
     try:
-        newgroup = Group(groupname=group_name, location=location, radius=radius, price=price, openat=openat, categories=categories)
+        newgroup = Group(group_name=group_name)
         db.session.add(newgroup)
+        db.session.flush()
+
+        groupinfo = GroupDetails(group_id=newgroup.group_id, latitude=location.get('latitude'), longitude=location.get('longitude'), radius=radius, price=price, open_at=openat, categories=categories)
+        db.session.add(groupinfo)
         db.session.commit()
+
         response_object = {
             'status': 'success',
-            'message': f'{group_name} was created!',
-            'url': newgroup.id,
+            'message': '{group_name} was created!'.format(group_name=group_name),
+            'url': newgroup.group_id,
         }
         return jsonify(response_object), 201
     except exc.IntegrityError as e:
         db.session.rollback()
         response_object = {
             'status': 'fail',
-            'message': 'Invalid payload.'
+            'message': 'Invalid payload.',
         }
         return jsonify(response_object), 400
 
-@group_blueprint.route('/group/<groupid>', methods=['GET'])
-def join_group(groupid):
-    if not groupid:
+@group_blueprint.route('/group/<group_id>', methods=['GET'])
+def join_group(group_id):
+    if not group_id:
         response_object = {
             'status': 'fail',
-            'message': 'Invalid payload.'
+            'message': 'Invalid payload.',
         }
         return jsonify(response_object), 400
     try:
-        group = Group.query.filter_by(id=groupid).first()
+        group = Group.query.filter_by(group_id=group_id).first()
         if group:
-            group.member_number += 1
+            group.member_count += 1
             db.session.commit()
             response_object = {
                 'status': 'success',
-                'message': f'{groupid} was found!',
-                'groupname': group.groupname,
-                'userid': group.member_number,
+                'message': '{group_id} was found!'.format(group_id=group_id),
+                'groupname': group.group_name,
+                'userid': group.member_count,
             }
             return jsonify(response_object), 200
         else:
@@ -118,6 +124,6 @@ def join_group(groupid):
         db.session.rollback()
         response_object = {
             'status': 'fail',
-            'message': 'Invalid payload.'
+            'message': 'Invalid payload.',
         }
         return jsonify(response_object), 400

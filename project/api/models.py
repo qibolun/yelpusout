@@ -3,33 +3,33 @@ import datetime
 from project import db
 
 # We're probably not gonna use 'Users'
-# class User(db.Model):
-#     __tablename__ = "users"
-#     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-#     username = db.Column(db.String(128), nullable=False)
-#     email = db.Column(db.String(128), nullable=False)
-#     active = db.Column(db.Boolean(), default=False, nullable=False)
-#     created_at = db.Column(db.DateTime, nullable=False)
+class User(db.Model):
+    __tablename__ = "users"
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    username = db.Column(db.String(128), nullable=False)
+    email = db.Column(db.String(128), nullable=False)
+    active = db.Column(db.Boolean(), default=False, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False)
 
-#     def __init__(self, username, email):
-#         self.username = username
-#         self.email = email
-#         self.created_at = datetime.datetime.utcnow()
+    def __init__(self, username, email):
+        self.username = username
+        self.email = email
+        self.created_at = datetime.datetime.utcnow()
 
 class Group(db.Model):
     __tablename__ = "group"
     group_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     group_name = db.Column(db.String(50), nullable=False)
     member_count = db.Column(db.Integer, default=0)
-    create_date = db.Column(db.DateTime, default=datetime.now(), nullable=False)
-    update_date = db.Column(db.DateTime, default=datetime.now())
+    create_date = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=False)
+    update_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
     def __init__(self, group_name):
         self.group_name = group_name
 
 class GroupDetails(db.Model):
     __tablename__ = "groupdetails"
-    group_id = db.Column(db.Integer)
+    group_id = db.Column(db.Integer, primary_key=True)
     latitude = db.Column(db.Integer, nullable=False)
     longitude = db.Column(db.Integer, nullable=False)
     radius = db.Column(db.Integer, nullable=False)
@@ -48,33 +48,12 @@ class GroupDetails(db.Model):
 
 class VotingSession(db.Model):
     __tablename__ = "votingsession"
-    group_id = db.Column(db.Integer)
+    group_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     voting_status = db.Column(db.String)
     consensus_reached = db.Column(db.Boolean, default=0)
-    create_date = db.Column(db.DateTime, default=datetime.now(), nullable=False)
-    update_date = db.Column(db.DateTime, default=datetime.now())
+    create_date = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=False)
+    update_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
     def __init__(self, group_id, voting_status):
         group_id = group_id
         voting_status = voting_status
-
-class Group(db.Model):
-    __tablename__ = "group"
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    groupname = db.Column(db.String(128), nullable=False)
-    location_latitude = db.Column(db.Float, nullable=True)
-    location_longitude = db.Column(db.Float, nullable=True)
-    radius = db.Column(db.Integer, nullable=True)
-    price = db.Column(db.String(128), nullable=True)
-    openat = db.Column(db.Integer, nullable=True)
-    categories = db.Column(db.String(128), nullable=True)
-    member_number = db.Column(db.Integer, default=0)
-
-    def __init__(self, groupname, location, radius, price, openat, categories):
-        self.groupname = groupname
-        self.location_latitude = location['latitude']
-        self.location_longitude = location['longitude']
-        self.radius = radius
-        self.price = price
-        self.openat = openat
-        self.categories = categories

@@ -3,7 +3,6 @@ import unittest
 from flask_script import Manager
 
 from project import create_app, db
-from project.api.models import User
 
 
 app = create_app()

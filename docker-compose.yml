@@ -2,8 +2,8 @@ version: '2.1'
 
 services:
 
-  users-db:
-    container_name: users-db
+  yuo-db:
+    container_name: yuo-db
     build: ./project/db
     ports:
         - 5435:5432  # expose ports - HOST:CONTAINER
@@ -13,8 +13,8 @@ services:
     healthcheck:
       test: exit 0
 
-  users-service:
-    container_name: users-service
+  yuo-service:
+    container_name: yuo-service
     build: ./
     volumes:
       - '.:/usr/src/app'
@@ -22,13 +22,13 @@ services:
       - 5001:5000 # expose ports - HOST:CONTAINER
     environment:
       - APP_SETTINGS=project.config.DevelopmentConfig
-      - DATABASE_URL=postgres://postgres:postgres@users-db:5432/users_dev
-      - DATABASE_TEST_URL=postgres://postgres:postgres@users-db:5432/users_test
+      - DATABASE_URL=postgres://postgres:postgres@yuo-db:5432/yelp_us_out_dev
+      - DATABASE_TEST_URL=postgres://postgres:postgres@yuo-db:5432/yelp_us_out_test
     depends_on:
-      users-db:
+      yuo-db:
         condition: service_healthy
     links:
-      - users-db
+      - yuo-db
 
   nginx:
     container_name: nginx
@@ -37,7 +37,7 @@ services:
     ports:
       - 80:80
     depends_on:
-      users-service:
+      yuo-service:
         condition: service_started
     links:
-      - users-service
+      - yuo-service
