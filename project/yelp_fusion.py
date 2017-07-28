@@ -85,12 +85,15 @@ def request(host, path, bearer_token, url_params=None):
     return response.json()
 
 
-def search(bearer_token, price, location, categories, radius):
+def search(bearer_token, price, location, categories, radius, openat):
     """Query the Search API by a search price and location.
 
     Args:
         price (str): The search price passed to the API.
         location (str): The search location passed to the API.
+        categories (str): ex. 'kosher, halal'
+        radius (int): Radius in miles around location
+        openat (int): Integer representing Unix time 
 
     Returns:
         dict: The JSON response from the request.
@@ -102,7 +105,7 @@ def search(bearer_token, price, location, categories, radius):
         'term': 'restaurants',
         'location': location.replace(' ', '+'),
         'limit': RESTAURANT_LIMIT,
-        'open_now': 'true',
+        'open_at': openat,
         'price': price,
         'categories': categories,
         'radius': radius
@@ -136,7 +139,7 @@ def get_reviews(bearer_token, business_id):
     return request(API_HOST, reviews_path, bearer_token)
 
 
-def query_api(price, location, categories, radius):
+def query_api(price, location, categories, radius, openat):
     """Queries the API by the input values from the user.
 
     Args:
@@ -145,7 +148,7 @@ def query_api(price, location, categories, radius):
     """
     bearer_token = 'B5XYOw2fqoxnXH5dUEaf3Mp57gTsUkGHQBiDa8viH1uYQDlCxox7p9G0b45QVr2BiJkziIGWaPhjdQhd-xtfhf1AUZ9yx2Xejn3GTNPEojfgCAVOn7stSbYvKDJ6WXYx'
 
-    response = search(bearer_token, price, location, categories, radius)
+    response = search(bearer_token, price, location, categories, radius, openat)
 
     businesses = response.get('businesses')
 
@@ -175,5 +178,5 @@ Location is an address, city, state
 Categories are listed at https://www.yelp.com/developers/documentation/v2/all_category_list , we support 'kosher' 'halal' 'vegan' 'vegetarian'
 Search radius is in meters
 '''
-def get_business_data(price, location, categories, radius):
-    return query_api(price, location, categories, radius)
+def get_business_data(price, location, categories, radius, openat):
+    return query_api(price, location, categories, radius, openat)

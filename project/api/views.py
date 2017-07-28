@@ -62,7 +62,7 @@ def add_user():
             'status': 'fail',
             'message': 'Invalid payload.',
         }
-        return jsonify(response_object), 400
+        return jsonify(response_object), 500
 
 @group_blueprint.route('/group', methods=['POST'])
 def create_group():
@@ -122,7 +122,7 @@ def create_group():
             'status': 'fail',
             'message': 'Invalid payload.',
         }
-        return jsonify(response_object), 400
+        return jsonify(response_object), 500
 
 @group_blueprint.route('/group/<group_id>', methods=['GET'])
 def join_group(group_id):
@@ -149,14 +149,14 @@ def join_group(group_id):
                 'status': 'fail',
                 'message': 'Sorry. The group doesn\'t exist.'
             }
-            return jsonify(response_object), 400
+            return jsonify(response_object), 404
     except exc.IntegrityError as e:
         db.session.rollback()
         response_object = {
             'status': 'fail',
             'message': 'Invalid payload.',
         }
-        return jsonify(response_object), 400
+        return jsonify(response_object), 500
 
 @votingsession_blueprint.route('/group/<group_id>/votingsession', methods=['POST'])
 def start_voting(group_id):
@@ -187,7 +187,7 @@ def start_voting(group_id):
             'status': 'fail',
             'message': 'Invalid payload.',
         }
-        return jsonify(response_object), 400
+        return jsonify(response_object), 500
 
 @votingsession_blueprint.route('/group/<group_id>/votingsession/<voting_session_id>', methods=['GET'])
 def get_voting_status(group_id, voting_session_id):
@@ -212,14 +212,14 @@ def get_voting_status(group_id, voting_session_id):
                 'status': 'fail',
                 'message': 'Sorry. The votingsession doesn\'t exist.'
             }
-            return jsonify(response_object), 400
+            return jsonify(response_object), 404
     except exc.IntegrityError as e:
         db.session.rollback()
         response_object = {
             'status': 'fail',
             'message': 'Invalid payload.',
         }
-        return jsonify(response_object), 400
+        return jsonify(response_object), 500
 
 @votingsession_blueprint.route('/group/<group_id>/votingsession/<voting_session_id>', methods=['PUT'])
 def end_voting(group_id, voting_session_id):
@@ -251,14 +251,14 @@ def end_voting(group_id, voting_session_id):
                 'status': 'fail',
                 'message': 'Sorry. The votingsession doesn\'t exist.'
             }
-            return jsonify(response_object), 400
+            return jsonify(response_object), 404
     except exc.IntegrityError as e:
         db.session.rollback()
         response_object = {
             'status': 'fail',
             'message': 'Invalid payload.',
         }
-        return jsonify(response_object), 400
+        return jsonify(response_object), 500
 
 @group_blueprint.route('/group/<groupid>/user/<userid>/vote', methods=['POST'])
 def add_vote(groupid, userid):
@@ -317,7 +317,7 @@ def get_votes(groupid):
                 'status': 'fail',
                 'message': 'Sorry. The group doesn\'t exist.'
             }
-            return jsonify(response_object), 400
+            return jsonify(response_object), 404
 
          # this gives a sorted tuple
         sorted_group_votes = sorted(group_votes.items(), key=operator.itemgetter(1), reverse=True)
@@ -333,7 +333,7 @@ def get_votes(groupid):
             'status': 'fail',
             'message': 'Invalid payload.',
         }
-        return jsonify(response_object), 400
+        return jsonify(response_object), 500
 
 @group_blueprint.route('/group/<groupid>/restaurants', method=['GET'])
 def get_restaurants(groupid):
@@ -345,7 +345,7 @@ def get_restaurants(groupid):
         }
         return jsonify(response_object), 400
     try:
-        group = Group.query.filter_by(group_id=group_id).first()
+        groupDetails = GroupDetails.query.filter_by(group_id=group_id).first()
         if not group:
             response_object = {
                 'status': 'fail',
@@ -353,9 +353,35 @@ def get_restaurants(groupid):
             }
             return jsonify(response_object), 404
         else:
-            location = group.
+            location = groupDetails.location
+            latitude = groupDetails.latitude
+            longitude = groupDetails.longitude
+            radius = groupDetails.radius
+            price = groupDetails.price
+            openat = groupDetails.openat
 
-            
+            # Compute categories
+            categories_list = []
+            if groupDetails.isVegan:
+                categories_list.append('vegan')
+            if groupDetails.isVegetarian
+                categories_list.append('vegetarian')
+            if groupDetails.isHalal:
+                categories_list.append('halal')
+            if groupDetails.isKosher:
+                categories_list.append('kosher')
+
+            categories = ",".join(categories_list)
+
+            # Call Yelp's Fusion API
+            response = YelpFusion.get_business_data(price, location, categories, radius)
+
+            response_object = {
+                'status': 'success',
+                'biz_data': json.dumps(response)
+            }
+
+            return jsonify(response_object), 200
     except exc.IntegrityError as e:
         response_object = {
             'status': 'fail',
