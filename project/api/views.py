@@ -175,7 +175,7 @@ def get_voting_status(group_id, voting_session_id):
         if votingsession:
             response_object = {
                 'status': 'success',
-                'message': 'Voting Session{voting_session_id} found!'.format(voting_session_id=voting_session_id),
+                'message': 'Voting Session {voting_session_id} found!'.format(voting_session_id=voting_session_id),
                 'voting_status': votingsession.voting_status,
             }
             return jsonify(response_object), 200
@@ -209,7 +209,7 @@ def end_voting(group_id, voting_session_id):
             db.session.commit()
             response_object = {
                 'status': 'success',
-                'message': '{voting_session_id} marked as Done!'.format(voting_session_id=voting_session_id),
+                'message': 'Voting Session {voting_session_id} marked as Done!'.format(voting_session_id=voting_session_id),
             }
             return jsonify(response_object), 200
         else:
