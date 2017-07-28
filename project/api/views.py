@@ -161,6 +161,38 @@ def start_voting(group_id):
         }
         return jsonify(response_object), 400
 
+@votingsession_blueprint.route('/group/<group_id>/votingsession/<voting_session_id>', methods=['GET'])
+def get_voting_status(group_id, voting_session_id):
+    post_data = request.get_json()
+    if not post_data:
+        response_object = {
+            'status': 'fail',
+            'message': 'Invalid payload.',
+        }
+        return jsonify(response_object), 400
+    try:
+        votingsession = VotingSession.query.filter_by(voting_session_id=voting_session_id).first()
+        if votingsession:
+            response_object = {
+                'status': 'success',
+                'message': 'Voting Session{voting_session_id} found!'.format(voting_session_id=voting_session_id),
+                'voting_status': votingsession.voting_status,
+            }
+            return jsonify(response_object), 200
+        else:
+            response_object = {
+                'status': 'fail',
+                'message': 'Sorry. The group doesn\'t exist.'
+            }
+            return jsonify(response_object), 400
+    except exc.IntegrityError as e:
+        db.session.rollback()
+        response_object = {
+            'status': 'fail',
+            'message': 'Invalid payload.',
+        }
+        return jsonify(response_object), 400
+
 @votingsession_blueprint.route('/group/<group_id>/votingsession/<voting_session_id>', methods=['PUT'])
 def end_voting(group_id, voting_session_id):
     post_data = request.get_json()
