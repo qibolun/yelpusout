@@ -8,8 +8,8 @@ from project import db
 import operator
 import json
 
-from werkzeug.contrib.cache import MemcachedCache
-cache = MemcachedCache(['127.0.0.1:11211'])
+from werkzeug.contrib.cache import SimpleCache
+cache = SimpleCache()
 
 users_blueprint = Blueprint('users', __name__, template_folder='./templates')
 group_blueprint = Blueprint('group', __name__, template_folder='./templates')
@@ -194,16 +194,16 @@ def get_votes(groupid):
         group_votes = cache.get(groupid)
         if group_votes is None:
             response_object = {
-                    'status': 'fail',
-                    'message': 'Sorry. The group doesn\'t exist.'
-                }
-                return jsonify(response_object), 404
+                'status': 'fail',
+                'message': 'Sorry. The group doesn\'t exist.'
+            }
+            return jsonify(response_object), 404
 
         # this gives a sorted tuple
         sorted_group_votes = sorted(group_votes.items(), key=operator.itemgetter(1), reverse=True)
 
         response_object = {
-            'status': 'success'
+            'status': 'success',
             'votes': json.dumps(sorted_group_votes) # hopefully parsing this wont be too bad
         }
         return jsonify(response_object), 200
